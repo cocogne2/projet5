@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 
 def list_unique(list_unique):
     """
-    Cet fonction prend une liste en entrée et retorune la liste sans doublon
+    Cette fonction prend une liste en entrée et retorune la liste sans doublon
     """
     new_list = [] 
     for i in list_unique : 
