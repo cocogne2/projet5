@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 
 def list_unique(list_unique):
     """
-    Cette fonction prend une liste en entrée et retorune la liste sans doublon
+    Cette fonction prend une liste en entrée et retourne la liste sans doublon
     """
     new_list = [] 
     for i in list_unique : 
@@ -906,7 +906,6 @@ from sklearn.decomposition import LatentDirichletAllocation
 n_topics = np.arange(10,101,5)
 data_topic_body_lda = pd.DataFrame(index=np.arange(100))
 for n_topic in n_topics:
-    print(n_topic)
     # Créer le modèle LDA
     lda = LatentDirichletAllocation(
             n_components=n_topic, 
@@ -941,7 +940,7 @@ data_topic_body_nmf = pd.DataFrame(index=np.arange(100))
 for n_topic in n_topics:
 
     # Run NMF
-    nmf = NMF(n_components=n_topic, random_state=1, alpha=.1, l1_ratio=.5, init='nndsvd')
+    nmf = NMF(n_components=n_topic, random_state=1, alpha=.1, l1_ratio=.5, init='nndsvd',max_iter=1000)
     nmf.fit(tfidf)
 
     no_top_words=20
