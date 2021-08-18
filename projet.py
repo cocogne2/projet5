@@ -300,6 +300,7 @@ for question in data_dict2:
             data_dict2[question]['Tags']=list(filter((value).__ne__,data_dict2[question]['Tags']))
         if value=="maven" :
             data_dict2[question]['Tags'].append("apache")
+            data_dict2[question]['Tags'].append("java")
             data_dict2[question]['Tags']=list(filter((value).__ne__,data_dict2[question]['Tags']))
         if value=="microsoft" :
             data_dict2[question]['Tags']=list(filter((value).__ne__,data_dict2[question]['Tags']))
@@ -446,7 +447,7 @@ for k in data_dict2:
             except ValueError:
                 indice_code=-1
             try:
-                indice_href=texte_temp.index("<a href=")
+                indice_href=texte_temp.index("<a ")
             except ValueError:
                 indice_href=-1
                 
@@ -458,6 +459,8 @@ for k in data_dict2:
                 texte_temp = texte_temp.replace('''\\\'''','''\'''')
                 #on enleve les balises et les sauts de lignes
                 texte_temp = texte_temp.replace('\n', ' ')
+                texte_temp = texte_temp.replace('<em>', '')
+                texte_temp = texte_temp.replace('</em>', '')
                 texte_temp = texte_temp.replace('<strong>', '')
                 texte_temp = texte_temp.replace('</strong>', '')
                 texte_temp = texte_temp.replace('<br>', '')
@@ -469,6 +472,8 @@ for k in data_dict2:
                 texte_temp = texte_temp.replace('</h1>', '')
                 texte_temp = texte_temp.replace('<h2>', '')
                 texte_temp = texte_temp.replace('</h2>', '')
+                texte_temp = texte_temp.replace('<blockquote>', '')
+                texte_temp = texte_temp.replace('</blockquote>', '')
                 data_dict2[k]['Body_texte']=data_dict2[k]['Body_texte']+" "+texte_temp
                 data_dict2[k]['Body_texte_code']=data_dict2[k]['Body_texte_code']+" "+texte_temp
             #si on est un element du code, on sauvegarde dans body_texte_code            
@@ -476,6 +481,8 @@ for k in data_dict2:
                              
                 #on enleve les balises et les sauts de lignes
                 texte_temp = texte_temp.replace('\n', ' ')
+                texte_temp = texte_temp.replace('<em>', '')
+                texte_temp = texte_temp.replace('</em>', '')
                 texte_temp = texte_temp.replace('<strong>', '')
                 texte_temp = texte_temp.replace('</strong>', '')
                 texte_temp = texte_temp.replace('<br>', '')
@@ -487,6 +494,8 @@ for k in data_dict2:
                 texte_temp = texte_temp.replace('</h1>', '')
                 texte_temp = texte_temp.replace('<h2>', '')
                 texte_temp = texte_temp.replace('</h2>', '')
+                texte_temp = texte_temp.replace('<blockquote>', '')
+                texte_temp = texte_temp.replace('</blockquote>', '')
                 texte_temp = texte_temp.replace('</code>', '')
                 texte_temp = texte_temp.replace('<code>', '')            
                 data_dict2[k]['Body_texte_code']=data_dict2[k]['Body_texte_code']+" "+texte_temp    
@@ -541,19 +550,16 @@ for k, v in corpora.items():
 #most_freq=pd.Series(' '.join(df.text).lower().split()).value_counts()[:100]
 most_freq = list(zip(*freq_totale.most_common(100)))[0]
 print(most_freq)
-
+most_freq=('i', 'the', 'to', 'a', 'is', 'and', 'in', 'this', 'it', 'my', 'of', 'but', 'that', 'have', 'with', 'for', 'error', 'on', 'not', 'am', 'can', 'using', 'when', 'how', 't', 'as', 'm', 'from', 'an', 'be', 'get', 'like', 'do', 'so', 'if', 'what', 'at', 'any', 'use', 'want', 'or','s', 'tried', 'there', 'trying', 'here','following', 'which', 'are', 'me', 'all', 'run', 'you', 'some', 'would', 'way', 'by', 'new', 'problem', 'one', 'work', 'no', 've', 'need', 'was', 'help', 'then', 'also', 'below',  'getting', 'know', 'has', 'same', 'only', 'just', 'does', 'working', 'now','will', 'should', 'build', 'after')
 nltk.download('stopwords')
 # On créé notre set de stopwords final qui cumule ainsi les 100 mots les plus fréquents du corpus ainsi que l'ensemble de stopwords par défaut présent dans la librairie NLTK
 sw = set()
 sw.update(most_freq)
 sw.update(tuple(nltk.corpus.stopwords.words('english')))
-tuple_sw_ajout=('I','ca','''can't''',''''s''','know','run','want','use','try','error','like','question','issue','code','example','solution')
+tuple_sw_ajout=('I','ca','\'s','could', 'know','run','want','use','try','err','error','errror','like','question','issue','example','solution','finally','follow','look','think','thank','make','code','answer','understand','thing','happen','say','sure','really','good','hello','tell','little','warning','late','fix','change')
 sw.update(tuple_sw_ajout)
-tuple_sw_discard=('c','project','app','file','1','android','0', 'version','2','data', 'js','new','3','3', 'java','component', 'below', 'class', 'artifactid', 'getting', 'function','flutter','build')
-for dis in tuple_sw_discard:
-    sw.discard(dis)
-print(sw)
-
+print("stopwords:",sw)
+print("nbr stopword:",len(sw))
 #ajout du lemmatizer
 import spacy
 nlp = spacy.load("en_core_web_sm")
@@ -592,9 +598,6 @@ for question in data_dict2:
     #on enleve les mots compris dans sw
     body_sans_stopwords_lemme_stem_sans_nltk_speller[question] += [w for w in tokens if (not w in list(sw)) ]
 
-
-data_fname = 'QueryResults.csv'
-data = pd.read_csv(os.path.join(path_to_data, data_fname), sep=",")
 #on sauvegarde
 import pickle
 data_fname = 'myDictionary.pkl'
@@ -626,11 +629,10 @@ for question in body_sans_stopwords_lemme_stem_sans_nltk_speller:
                 del body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index+1]
                 del body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index]
                 drap=1
-        #on supprime "n't"        
-        if value=="n't" and drap==0:
+        #on supprime "n't" ou les verbes        
+        if ("n\'t" in value or "\'m" in value or "\'ve" in value or '\'re' in value or '\'d' in value or value=="it\\" or value=="run" ) and drap==0:
             del body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index]
-            drap=1
-        
+            drap=1      
         #on remplace les \' par '
         try:
             indice=value.index('''\\\'''')
@@ -639,7 +641,10 @@ for question in body_sans_stopwords_lemme_stem_sans_nltk_speller:
         if indice!=-1 and drap==0:
             body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index]=body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index].replace('''\\\'''','''\'''')
             drap=1
-
+        #on supprime les années
+        if (re.search("20[0-9]{2}",value) is not None) and len(value)==4 and drap==0:
+            del body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index]
+            drap=1
         #on remplace pe par ping
         if value=="pe" and drap==0:
             body_sans_stopwords_lemme_stem_sans_nltk_speller[question][index]="ping"
@@ -940,7 +945,6 @@ plt.xlabel('nombre de mots')
 plt.ylabel('nombre de questions')
 plt.show()
 
-
 list_question_brute=[]
 for question in data_dict2:
     list_question_brute.append(question)
@@ -1222,23 +1226,29 @@ data_tsne_matrix=df_total_matrix[liste_topic]
 df_total_matrix['question']=df_total_matrix.index
 
 data_topic_body_lda['mean_topic']=0
+data_topic_body_lda['mean_topic_sans_0']=0
 x=0
 while x<nbr_topic_lda_retenu:
     data_topic_body_lda.loc[x, 'mean_topic'] = data_tsne_matrix["topic_"+str(x)].mean()
+    data_topic_body_lda.loc[x, 'mean_topic_sans_0'] = data_tsne_matrix[data_tsne_matrix["topic_"+str(x)]!=0]["topic_"+str(x)].mean()
     x=x+1
 temp=data_tsne_matrix.copy()
 temp['nbr_topic']=0
 x=0
 while x<nbr_topic_lda_retenu:
-    temp["drap_topic_"+str(x)]=np.where( temp["topic_"+str(x)] > 0.33, 1, 0)
+    temp["drap_topic_"+str(x)]=np.where( temp["topic_"+str(x)] > 0.20, 1, 0)
     temp['nbr_topic']=temp['nbr_topic']+temp["drap_topic_"+str(x)]
     x=x+1 
 
+
+temp2=pd.DataFrame(temp.groupby('nbr_topic')['topic_0'].count())
+temp2.rename(columns={'topic_0': 'effectifs'}, inplace=True)
+temp2=temp2.reset_index()
 plt.figure()
-plt.hist(temp['nbr_topic'],bins=10)
-plt.title('distribution du nombre de topic par question')
-plt.xlabel('nombre de topic par question')
+plt.bar(temp2['nbr_topic'],temp2['effectifs'], 1, color='royalblue' )
+plt.xlabel('nombre de topics')
 plt.ylabel('nombre de questions')
+plt.title('nombre de topics par question (score>O.20)')
 plt.show()
     
 data3=pd.DataFrame(list_question_brute,columns = ['question'])
@@ -1283,7 +1293,7 @@ for j, perplexity in enumerate(perplexities):
                loc='lower left',
                ncol=3,
                fontsize=8)
-    plt.title("tsne (matrice 10) avec une perplexité="+str(perplexity))
+    plt.title("tsne (matrice 15) avec une perplexité="+str(perplexity))
     plt.show()
     colors = ['y', 'b']
     
@@ -1303,7 +1313,7 @@ for j, perplexity in enumerate(perplexities):
                loc='lower left',
                ncol=3,
                fontsize=8)
-    plt.title("tsne (matrice 10) avec une perplexité="+str(perplexity))
+    plt.title("tsne (matrice 15) avec une perplexité="+str(perplexity))
     plt.show()
     colors = ['c', 'y']
     plt.figure()
@@ -1322,7 +1332,7 @@ for j, perplexity in enumerate(perplexities):
                loc='lower left',
                ncol=3,
                fontsize=8)
-    plt.title("tsne (matrice 10) avec une perplexité="+str(perplexity))
+    plt.title("tsne (matrice 15) avec une perplexité="+str(perplexity))
     plt.show()
 
 ###########################################################
@@ -1479,7 +1489,7 @@ for value in list_tag_brute:
 df_tags_acp_coordonnees= pd.DataFrame.from_dict(tag_acp_coordonnees, orient='index')
 list_pca_strict=[]
 for index, value in enumerate(list_tag_brute):
-    if value=='python' or value=='java' or value=='pandas' or value=='javascript' or value=='.net-core':
+    if value=='python' or value=='git' or value=='java' or value=='pandas' or value=='javascript' or value=='.net-core':
         list_pca_strict.append(index)
 df_tags_acp_coordonnees_sample=df_tags_acp_coordonnees.iloc[list_pca_strict]
 
@@ -1530,7 +1540,28 @@ plt.xlabel("F3")
 plt.ylabel("F4")
 plt.show()
 
+fig, ax = plt.subplots()
+ax.scatter(df_tags_acp_coordonnees['F5'], df_tags_acp_coordonnees['F6'])
+ax.grid(True)
 
+for i, txt in enumerate(df_tags_acp_coordonnees.index):
+    ax.annotate(txt,(df_tags_acp_coordonnees['F5'][i],df_tags_acp_coordonnees['F6'][i]))
+plt.xlabel("F5")
+plt.ylabel("F6")
+plt.show()
+
+fig, ax = plt.subplots()
+ax.scatter(df_tags_acp_coordonnees_sample['F5'], df_tags_acp_coordonnees_sample['F6'])
+ax.grid(True)
+ax.spines['left'].set_position('zero')
+ax.spines['right'].set_color('none')
+ax.spines['bottom'].set_position('zero')
+ax.spines['top'].set_color('none')
+for i, txt in enumerate(df_tags_acp_coordonnees_sample.index):
+    ax.annotate(txt,(df_tags_acp_coordonnees_sample['F5'][i],df_tags_acp_coordonnees_sample['F6'][i]))
+plt.xlabel("F5")
+plt.ylabel("F6")
+plt.show()
 ###########################################################
 #        MULTILAYERPERCEPTRON SUR LE TF ONE VS REST (9h)  #
 ###########################################################
@@ -1758,7 +1789,12 @@ while x<len(list_var_tags):
 
 
 tag_best_param_rf_tf_multiclass.append(rfc.best_params_)
-
+x=0
+while x<len(list_tag_brute):
+    df_tags_matrix_predict['est_prediction_1_mlp_tf_'+list_tag_brute[x]]=np.where(df_tags_matrix_predict['prob_prediction_1_mlp_tf_'+list_tag_brute[x]]>=0.8,1,0)
+    df_tags_matrix_multiclass_rf_predict['est_prediction_1_rf_multiclass_tf_tag_'+list_tag_brute[x]]=np.where(df_tags_matrix_multiclass_rf_predict['prob_prediction_1_rf_multiclass_tf_tag_'+list_tag_brute[x]]>=0.8,1,0)
+    df_tags_matrix_multiclass_mlp_predict['est_prediction_1_mlp_multiclass_tf_tag_'+list_tag_brute[x]]=np.where(df_tags_matrix_multiclass_mlp_predict['prob_prediction_1_mlp_multiclass_tf_tag_'+list_tag_brute[x]]>=0.8,1,0)
+    x=x+1
 ###########################################################
 #           RANDOM FOREST SUR LE MATRICE 10               #
 ###########################################################
@@ -1811,6 +1847,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.model_selection import GridSearchCV
 t1=time.time()
 search_params = {'n_components': [20], 'learning_decay': [.5, .7, .9]}
+
 lda_20 = LatentDirichletAllocation(max_iter=5, 
              learning_method='online', 
              learning_offset=50.,
@@ -1887,8 +1924,8 @@ plt.show()
 data3=pd.DataFrame(list_question_brute,columns = ['question'])
 from sklearn import manifold
 n_components = 2
-#perplexities = list(range(0, 51, 5))
-perplexities=[20,40]
+perplexities = list(range(0, 51, 5))
+#perplexities=[20,40]
 for j, perplexity in enumerate(perplexities):
     print('j={}'.format(j))
     tsne = manifold.TSNE(n_components=n_components,random_state=1, perplexity=perplexity)
@@ -2107,6 +2144,30 @@ for i, txt in enumerate(df_tags_20_acp_coordonnees_sample.index):
 plt.xlabel("F3")
 plt.ylabel("F4")
 plt.show()
+
+
+fig, ax = plt.subplots()
+ax.scatter(df_tags_20_acp_coordonnees['F5'], df_tags_20_acp_coordonnees['F6'])
+ax.grid(True)
+for i, txt in enumerate(df_tags_20_acp_coordonnees.index):
+    ax.annotate(txt,(df_tags_20_acp_coordonnees['F5'][i],df_tags_20_acp_coordonnees['F6'][i]))
+plt.xlabel("F5")
+plt.ylabel("F6")
+plt.show()
+
+fig, ax = plt.subplots()
+ax.scatter(df_tags_20_acp_coordonnees_sample['F5'], df_tags_20_acp_coordonnees_sample['F6'])
+ax.grid(True)
+ax.spines['left'].set_position('zero')
+ax.spines['right'].set_color('none')
+ax.spines['bottom'].set_position('zero')
+ax.spines['top'].set_color('none')
+for i, txt in enumerate(df_tags_20_acp_coordonnees_sample.index):
+    ax.annotate(txt,(df_tags_20_acp_coordonnees_sample['F5'][i],df_tags_20_acp_coordonnees_sample['F6'][i]))
+plt.xlabel("F5")
+plt.ylabel("F6")
+plt.show()
+
 
 # =============================================================================
 # 
